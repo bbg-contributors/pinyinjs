@@ -13,6 +13,7 @@ var SimpleInputMethod =
 	pageCount: 0, // 总页数
 	doublePinyinModeEnabled: false,
 	doublePinyinTypeIfEnabled: "",
+	isInEnglishMode: true,
 	doublePinyinMapping: {
 		"patterns": [
 			{
@@ -231,8 +232,12 @@ var SimpleInputMethod =
 				var preventDefault = false;
 				if(keyCode >= 65 && keyCode <= 90) // A-Z
 				{
-					that.addChar(String.fromCharCode(keyCode+32), this);
-					preventDefault = true;
+					if (that.isInEnglishMode) {
+						preventDefault = false;
+					} else {
+						that.addChar(String.fromCharCode(keyCode+32), this);
+						preventDefault = true;
+					}
 				}
 				else if(keyCode == 8 && that.pinyin) // 删除键
 				{
@@ -259,6 +264,21 @@ var SimpleInputMethod =
 				{
 					that.pageCurrent++;
 					that.refreshPage();
+					preventDefault = true;
+				}
+				else if(e.ctrlKey && keyCode === 32)
+				{
+					that.isInEnglishMode = !that.isInEnglishMode;
+					preventDefault = true;
+				}
+				else if(e.shiftKey)
+				{
+					that.isInEnglishMode = !that.isInEnglishMode;
+					preventDefault = true;
+				}
+				else if(e.shiftKey && keyCode === 32)
+				{
+					that.isInEnglishMode = !that.isInEnglishMode;
 					preventDefault = true;
 				}
 				else if(keyCode === 33 || keyCode === 189 || keyCode === 173 || keyCode === 34 || keyCode === 187 || keyCode === 61) {
@@ -361,6 +381,9 @@ var SimpleInputMethod =
 	},
 	addChar: function(ch, obj)
 	{
+		if(this.isInEnglishMode){
+			return;
+		}
 		if(this.pinyin.length == 0) // 长度为1，显示输入法
 		{
 			this.show(obj);
