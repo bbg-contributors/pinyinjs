@@ -6,10 +6,135 @@ var SimpleInputMethod =
 {
 	hanzi: '', // 候选汉字
 	pinyin: '', // 候选拼音
+	doublePinyin: '', // 候选拼音的双拼格式，在程序运行过程中始终与this.pinyin保持同步
 	result: [], // 当前匹配到的汉字集合
 	pageCurrent: 1, // 当前页
 	pageSize: 5, // 每页大小
 	pageCount: 0, // 总页数
+	doublePinyinModeEnabled: false,
+	doublePinyinTypeIfEnabled: "",
+	doublePinyinMapping: {
+		"patterns": [
+			{
+				"patternName": "Xiaohe",
+				"left": {
+					"u": "sh",
+					"i": "ch",
+					"v": "zh"
+				},
+				"right": {
+					"q": "iu",
+					"w": "ei",
+					"r": "uan",
+					"t": ["ue", "ve"],
+					"y": "un",
+					"o": ["o", "uo"],
+					"p": "ie",
+					"s": ["iong", "ong"],
+					"d": "ai",
+					"f": "en",
+					"g": "eng",
+					"h": "ang",
+					"j": "an",
+					"k": ["ing", "uai"],
+					"l": ["iang", "uang"],
+					"z": "ou",
+					"x": ["ia", "ua"],
+					"c": "ao",
+					"v": ["ui", "v"],
+					"b": "in",
+					"n": "iao",
+					"m": "ian"
+				},
+				"conflictionSolutionList": {
+					"t": {
+						"ue": ["q", "y", "j", "l", "x", "n"],
+						"ve": "else"
+					},
+					"o": {
+						"uo": ["r", "t", "u", "i", "s", "d", "g", "h", "k", "l", "z", "c", "v", "n"],
+						"o": "else"
+					},
+					"s": {
+						"iong": ["q", "j", "x"],
+						"ong": "else"
+					},
+					"k": {
+						"ing": ["q", "t", "y", "p", "d", "j", "l", "x", "b", "n", "m"],
+						"uai": "else"
+					},
+					"l": {
+						"iang": ["q", "p", "j", "l", "x", "b", "n"],
+						"uang": "else"
+					},
+					"x": {
+						"ia": ["q", "p", "j", "x"],
+						"ua": "else"
+					},
+					"v": {
+						"ui": ["r", "t", "u", "i", "s", "d", "g", "h", "k", "z", "c", "v"],
+						"v": "else"
+					}
+				}
+			}
+		]
+	},
+	convertSingleDoublePinyinCharToPinyin: function(char, leftOrRight, doublePinyinPatternType, previousCharInDoublePinyin) {
+		if (leftOrRight === undefined || leftOrRight === null || leftOrRight !== "left" && leftOrRight !== "right") {
+			throw new Error("必须指明传入的字符是声母还是韵母");
+		}
+
+		if (doublePinyinPatternType === undefined || doublePinyinPatternType === null) {
+			throw new Error("必须指明双拼方案（例如“Xiaohe”）");
+		}
+
+		let doublePinyinPatterns = new Object();
+
+		this.doublePinyinMapping.patterns.forEach((item) => {
+			doublePinyinPatterns[item.patternName] = item;
+		});
+
+
+		if (doublePinyinPatterns[doublePinyinPatternType] === undefined || doublePinyinPatterns[doublePinyinPatternType] === null) {
+			throw new Error("不支持此双拼方案");
+		};
+
+		let result = doublePinyinPatterns[doublePinyinPatternType][leftOrRight][char];
+
+		if (result === undefined || result === null) {
+			return char;
+		} else {
+			if (Array.isArray(result)) {
+				// 字母对应多个韵母，需要判断是哪一个
+				if (previousCharInDoublePinyin === undefined || previousCharInDoublePinyin === null) {
+					throw new Error("无法根据声母判断选择哪一个韵母，必须传入previousChatInDoublePinyin来解决此问题");
+				} else {
+					let result;
+					
+					Object.keys(doublePinyinPatterns[doublePinyinPatternType].conflictionSolutionList[char]).forEach((item) => {
+						if (Array.isArray(doublePinyinPatterns[doublePinyinPatternType].conflictionSolutionList[char][item])) {
+							if (doublePinyinPatterns[doublePinyinPatternType].conflictionSolutionList[char][item].includes(previousCharInDoublePinyin)){
+								result = item;
+							}
+						}
+					});
+					if (result === undefined || result === null){
+						Object.keys(doublePinyinPatterns[doublePinyinPatternType].conflictionSolutionList[char]).forEach((item) => {
+							if(doublePinyinPatterns[doublePinyinPatternType].conflictionSolutionList[char][item] === "else"){
+								result = item;
+							}
+						});
+					}
+					if (result === undefined || result === null){
+						throw new Error("无法根据conflictionSolutionList中的信息判断选择哪一个韵母");
+					}
+					return result;
+				}
+			} else {
+				return result;
+			}
+		}
+	},
 	/**
 	 * 初始化字典配置
 	 */
@@ -72,7 +197,7 @@ var SimpleInputMethod =
 	/**
 	 * 初始化
 	 */
-	init: function(selector)
+	init: function(selector, doublePinyinModeEnabled = false, doublePinyinTypeIfEnabled)
 	{
 		this.initDict();
 		this.initDom();
@@ -81,6 +206,14 @@ var SimpleInputMethod =
 		this._pinyinTarget = document.querySelector('#simle_input_method .pinyin');
 		this._resultTarget = document.querySelector('#simle_input_method .result ol');
 		var that = this;
+		if (doublePinyinModeEnabled) {
+			this.doublePinyinModeEnabled = true;
+			if (doublePinyinTypeIfEnabled === undefined || doublePinyinTypeIfEnabled === null) {
+				throw new Error("You need to specify double pinyin type if you enabled double pinyin mode!");
+			} else {
+				this.doublePinyinTypeIfEnabled = doublePinyinTypeIfEnabled;
+			}
+		}
 		for(var i=0; i<obj.length; i++)
 		{
 			obj[i].addEventListener('keydown', function(e)
@@ -107,16 +240,19 @@ var SimpleInputMethod =
 					that.selectHanzi(1);
 					preventDefault = true;
 				}
-				else if(keyCode == 33 && that.pageCount > 0 && that.pageCurrent > 1) // 上翻页
+				else if(keyCode == 33 && that.pageCount > 0 && that.pageCurrent > 1 || keyCode == 189 && that.pageCount > 0 && that.pageCurrent > 1 || keyCode == 173 && that.pageCount > 0 && that.pageCurrent > 1) // 上翻页
 				{
 					that.pageCurrent--;
 					that.refreshPage();
 					preventDefault = true;
 				}
-				else if(keyCode == 34 && that.pageCount > 0 && that.pageCurrent < that.pageCount) // 下翻页
+				else if(keyCode == 34 && that.pageCount > 0 && that.pageCurrent < that.pageCount || keyCode == 187 && that.pageCount > 0 && that.pageCurrent < that.pageCount || keyCode == 61 && that.pageCount > 0 && that.pageCurrent < that.pageCount) // 下翻页
 				{
 					that.pageCurrent++;
 					that.refreshPage();
+					preventDefault = true;
+				}
+				else if(keyCode === 33 || keyCode === 189 || keyCode === 173 || keyCode === 34 || keyCode === 187 || keyCode === 61) {
 					preventDefault = true;
 				}
 				if(preventDefault) e.preventDefault();
@@ -220,17 +356,51 @@ var SimpleInputMethod =
 		{
 			this.show(obj);
 		}
-		this.pinyin += ch;
+		if (this.doublePinyinModeEnabled) {
+			if(this.pinyin.length === 0){
+				this.pinyin += this.convertSingleDoublePinyinCharToPinyin(ch, "left", this.doublePinyinTypeIfEnabled);
+			} else {
+				if (this.doublePinyin.length % 2 === 0){
+					// 已有双拼长度为偶数，证明没有输入声母，此时输入的是声母
+					this.pinyin += this.convertSingleDoublePinyinCharToPinyin(ch, "left", this.doublePinyinTypeIfEnabled);
+				} else {
+					// 输入韵母
+					this.pinyin += this.convertSingleDoublePinyinCharToPinyin(ch, "right", this.doublePinyinTypeIfEnabled, this.doublePinyin[this.doublePinyin.length-1]);
+				}
+			}
+			this.doublePinyin += ch;
+		} else {
+			this.pinyin += ch;
+		}
 		this.refresh();
 	},
 	delChar: function()
 	{
 		if(this.pinyin.length <= 1)
 		{
+			if (this.doublePinyinModeEnabled && this.doublePinyin.length === 1) {
+				this.doublePinyin = "";
+			}
 			this.hide();
 			return;
 		}
-		this.pinyin = this.pinyin.substr(0, this.pinyin.length-1);
+		if (this.doublePinyinModeEnabled) {
+			let lastSegment = this.doublePinyin[this.doublePinyin.length-1];
+			if (this.doublePinyin.length % 2 === 0){
+				// 删除的是韵母
+				this.pinyin = this.pinyin.substr(0, this.pinyin.length-this.convertSingleDoublePinyinCharToPinyin(lastSegment, "right", this.doublePinyinTypeIfEnabled, this.doublePinyin[this.doublePinyin.length-1]).length);
+			} else {
+				// 删除的是声母
+				this.pinyin = this.pinyin.substr(0, this.pinyin.length-this.convertSingleDoublePinyinCharToPinyin(lastSegment, "left", this.doublePinyinTypeIfEnabled).length);
+			}
+			if (this.doublePinyin.length === 1) {
+				this.doublePinyin = "";
+			} else {
+				this.doublePinyin = this.doublePinyin.substr(0, this.doublePinyin.length-1);
+			}
+		} else {
+			this.pinyin = this.pinyin.substr(0, this.pinyin.length-1);
+		}
 		this.refresh();
 	},
 	show: function(obj)
