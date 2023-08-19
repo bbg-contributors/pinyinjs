@@ -43,8 +43,9 @@ var SimpleInputMethod =
 					"c": "ao",
 					"v": ["ui", "v"],
 					"b": "in",
-					"n": "iao",
-					"m": "ian"
+					"n": ["iao", "n"],
+					"m": "ian",
+					"a": ["a", ""]
 				},
 				"conflictionSolutionList": {
 					"t": {
@@ -74,6 +75,14 @@ var SimpleInputMethod =
 					"v": {
 						"ui": ["r", "t", "u", "i", "s", "d", "g", "h", "k", "z", "c", "v"],
 						"v": "else"
+					},
+					"n": {
+						"n": ["a", "e"],
+						"iao": "else"
+					},
+					"a": {
+						"": ["a"],
+						"a": "else"
 					}
 				}
 			}
