@@ -378,7 +378,7 @@ var SimpleInputMethod =
 	{
 		if(this.pinyin.length <= 1)
 		{
-			if (this.doublePinyinModeEnabled && this.doublePinyin.length === 1) {
+			if (this.doublePinyinModeEnabled) {
 				this.doublePinyin = "";
 			}
 			this.hide();
