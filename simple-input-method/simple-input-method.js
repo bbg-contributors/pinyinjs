@@ -14,6 +14,9 @@ var SimpleInputMethod =
 	doublePinyinModeEnabled: false,
 	doublePinyinTypeIfEnabled: "",
 	isInEnglishMode: true,
+	callbackFuncWhenChangeEnglishMode: function(modeAfterChange){
+
+	},
 	doublePinyinMapping: {
 		"patterns": [
 			{
@@ -70,7 +73,7 @@ var SimpleInputMethod =
 						"uang": "else"
 					},
 					"x": {
-						"ia": ["q", "p", "j", "x"],
+						"ia": ["q", "p", "j", "x", "l"],
 						"ua": "else"
 					},
 					"v": {
@@ -84,6 +87,14 @@ var SimpleInputMethod =
 					"a": {
 						"": ["a"],
 						"a": "else"
+					},
+					"e": {
+						"": ["e"],
+						"e": "else"
+					},
+					"o": {
+						"": ["o"],
+						"o": "else"
 					}
 				}
 			}
@@ -270,16 +281,19 @@ var SimpleInputMethod =
 				{
 					that.isInEnglishMode = !that.isInEnglishMode;
 					preventDefault = true;
+					callbackFuncWhenChangeEnglishMode(that.isInEnglishMode);
 				}
 				else if(e.shiftKey)
 				{
 					that.isInEnglishMode = !that.isInEnglishMode;
 					preventDefault = true;
+					callbackFuncWhenChangeEnglishMode(that.isInEnglishMode);
 				}
 				else if(e.shiftKey && keyCode === 32)
 				{
 					that.isInEnglishMode = !that.isInEnglishMode;
 					preventDefault = true;
+					callbackFuncWhenChangeEnglishMode(that.isInEnglishMode);
 				}
 				else if(keyCode === 33 || keyCode === 189 || keyCode === 173 || keyCode === 34 || keyCode === 187 || keyCode === 61) {
 					preventDefault = true;
