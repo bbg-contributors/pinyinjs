@@ -32,7 +32,7 @@ var SimpleInputMethod =
 					"r": "uan",
 					"t": ["ue", "ve"],
 					"y": "un",
-					"o": ["o", "uo"],
+					"o": ["o", "uo", ""],
 					"p": "ie",
 					"s": ["iong", "ong"],
 					"d": "ai",
@@ -49,7 +49,8 @@ var SimpleInputMethod =
 					"b": "in",
 					"n": ["iao", "n"],
 					"m": "ian",
-					"a": ["a", ""]
+					"a": ["a", ""],
+					"e": ["e", ""],
 				},
 				"conflictionSolutionList": {
 					"t": {
@@ -58,6 +59,7 @@ var SimpleInputMethod =
 					},
 					"o": {
 						"uo": ["r", "t", "u", "i", "s", "d", "g", "h", "k", "l", "z", "c", "v", "n"],
+						"": ["o"],
 						"o": "else"
 					},
 					"s": {
@@ -91,10 +93,6 @@ var SimpleInputMethod =
 					"e": {
 						"": ["e"],
 						"e": "else"
-					},
-					"o": {
-						"": ["o"],
-						"o": "else"
 					}
 				}
 			}
