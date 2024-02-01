@@ -279,19 +279,19 @@ var SimpleInputMethod =
 				{
 					that.isInEnglishMode = !that.isInEnglishMode;
 					preventDefault = true;
-					callbackFuncWhenChangeEnglishMode(that.isInEnglishMode);
+					that.callbackFuncWhenChangeEnglishMode(that.isInEnglishMode);
 				}
 				else if(e.shiftKey)
 				{
 					that.isInEnglishMode = !that.isInEnglishMode;
 					preventDefault = true;
-					callbackFuncWhenChangeEnglishMode(that.isInEnglishMode);
+					that.callbackFuncWhenChangeEnglishMode(that.isInEnglishMode);
 				}
 				else if(e.shiftKey && keyCode === 32)
 				{
 					that.isInEnglishMode = !that.isInEnglishMode;
 					preventDefault = true;
-					callbackFuncWhenChangeEnglishMode(that.isInEnglishMode);
+					that.callbackFuncWhenChangeEnglishMode(that.isInEnglishMode);
 				}
 				else if(keyCode === 33 || keyCode === 189 || keyCode === 173 || keyCode === 34 || keyCode === 187 || keyCode === 61) {
 					preventDefault = true;
